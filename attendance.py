@@ -8,7 +8,10 @@ import datetime
 client = discord.Client()
 
 filename = 'data.csv'
-csv_data = pd.read_csv(filename, encoding="shift-jis")
+#csv_data = pd.read_csv(filename, encoding="shift-jis")
+csv_data = pd.DataFrame(columns = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun', 'attend', 'absent', 'late'])
+
+master = ''
 
 def read_csv(filename):
     f = open(filename, "r")
@@ -54,6 +57,7 @@ async def on_message(message):
                 update(message.author, column1, 1)
             for column2 in ['attend', 'absent', 'late']:
                 update(message.author, column2, 0)
+            print (csv_data)
         else:
             
             regist_weekday = regist_weekdays[2].split(",")
@@ -74,43 +78,51 @@ async def on_message(message):
 
 
     elif message.content.startswith('output'):  #出席者確認
-        await client.send_message(message.channel, '[本日の出席者]')
-        aDate = datetime.date.today()
-        weekday = aDate.weekday()   #曜日取得
-        if (weekday == 0):
-            day = "Mon"
-        elif (weekday == 1):
-            day = "Tue"
-        elif (weekday == 2):
-            day = "Wed"
-        elif (weekday == 3):
-            day = "Thu"
-        elif (weekday == 4):
-            day = "Fri"
-        elif (weekday == 5):
-            day = "Sat"
-        elif (weekday == 6):
-            day = "Sun"
-        print (csv_data)
+        global master
+        if str(message.author) == master:
+            await client.send_message(message.channel, '[本日の出席者]')
+            aDate = datetime.date.today()
+            weekday = aDate.weekday()   #曜日取得
+            if (weekday == 0):
+                day = "Mon"
+            elif (weekday == 1):
+                day = "Tue"
+            elif (weekday == 2):
+                day = "Wed"
+            elif (weekday == 3):
+                day = "Thu"
+            elif (weekday == 4):
+                day = "Fri"
+            elif (weekday == 5):
+                day = "Sat"
+            elif (weekday == 6):
+                day = "Sun"
+            print (csv_data)
 
-        for name in csv_data.index.values:
-            if csv_data.at[name, 'attend'] == 1: #出席連絡がある場合
-                await client.send_message(message.channel, name)
-                update(message.author, 'attend', 0)
-            elif csv_data.at[name, 'absent'] == 0: #欠席連絡がない場合
-                if  csv_data.at[name, 'late'] != 0:  #遅刻連絡があった場合
-                    await client.send_message(message.channel, str(name) + ' (' + str(csv_data.at[name, 'late']) + ')')
-                    update(message.author, 'late', 0)
-                else:   #遅刻連絡がない場合
-                    if csv_data.at[name, day] == 1:
-                        await client.send_message(message.channel, name)
+            for name in csv_data.index.values:
+                if csv_data.at[name, 'attend'] == 1: #出席連絡がある場合
+                    await client.send_message(message.channel, name)
+                    update(message.author, 'attend', 0)
+                elif csv_data.at[name, 'absent'] == 0: #欠席連絡がない場合
+                    if  csv_data.at[name, 'late'] != 0:  #遅刻連絡があった場合
+                        await client.send_message(message.channel, str(name) + ' (' + str(csv_data.at[name, 'late']) + ')')
                         update(message.author, 'late', 0)
-            else:   #欠席連絡がある場合
-                update(message.author, 'absent', 0)
-            for column in ['attend', 'absent', 'late']:
-                    update(message.author, column, 0)
-    elif message.content.startswith('exit'):  #プログラム終了
-        exit()
+                    else:   #遅刻連絡がない場合
+                        if csv_data.at[name, day] == 1:
+                            await client.send_message(message.channel, name)
+                            update(message.author, 'late', 0)
+                else:   #欠席連絡がある場合
+                    update(message.author, 'absent', 0)
+                for column in ['attend', 'absent', 'late']:
+                        update(message.author, column, 0)
+        else:
+            await client.send_message(message.channel, 'あなたにはその権限はありません。')
+
+    #elif message.content.startswith('exit'):  #プログラム終了
+    #    exit()
+
+    elif message.content.startswith('master'):
+        master = str(message.author)
 
 
 client.run('NDY2MTk3NDI2OTExMzEzOTMw.DiYm7g.2nWing3Y1vCc1s-w33FHsuvkIyU') #実行
