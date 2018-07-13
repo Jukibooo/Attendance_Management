@@ -48,7 +48,8 @@ async def on_message(message):
             #csv_data[csv_data.name == message.author][['absent']] = 1
                 update(index, message.author, 'attend', 1)
 
-        await client.send_message(message.channel, 'OK')
+        msg = str(message.author) + 'は本日出席します。'
+        await client.send_message(message.channel, msg)
 
     elif message.content.startswith('absent'):  #欠席連絡
         for index in range(len(csv_data)):
@@ -56,7 +57,8 @@ async def on_message(message):
             #csv_data[csv_data.name == message.author][['absent']] = 1
                 update(index, message.author, 'absent', 1)
 
-        await client.send_message(message.channel, 'OK')
+        msg = str(message.author) + 'は本日欠席します。'
+        await client.send_message(message.channel, msg)
 
     elif message.content.startswith('late'):  #遅刻連絡
         late_data = message.content.split()
@@ -65,7 +67,8 @@ async def on_message(message):
             #csv_data[csv_data.name == message.author][['absent']] = 1
                 update(index, message.author, 'late', late_data[1])
 
-        await client.send_message(message.channel, 'OK')
+        msg = str(message.author) + 'は本日遅刻で、' + late_data[1] + 'から参加します。'
+        await client.send_message(message.channel, msg)
 
 
     elif message.content.startswith('regist'):  #登録
@@ -89,23 +92,27 @@ async def on_message(message):
                 for column2 in ['attend', 'absent', 'late']:
                     update(num, message.author, column2, 0)
                 print (csv_data)
+                msg = str(message.author) + 'が登録されました。'
         else:
             
             regist_weekday = regist_weekdays[2].split(",")
             if regist_weekdays[1] == "play":
-                for day in regist_weekday:
-                    update(message.author, day, 1)
+                for index in range(len(csv_data)):
+                    if csv_data.loc[index, ['name']]['name'] == str(message.author):
+                    #csv_data[csv_data.name == message.author][['absent']] = 1
+                        for day in regist_weekday:
+                            update(index, message.author, day, 1)
+                        msg = str(message.author) + 'が' + ','.join(regist_weekday) + 'に参加できるようになりました。'
+
             elif regist_weekdays[1] == "delete":
-                for day in regist_weekday:
-                    update(message.author, day, 0)
+                for index in range(len(csv_data)):
+                    if csv_data.loc[index, ['name']]['name'] == str(message.author):
+                    #csv_data[csv_data.name == message.author][['absent']] = 1
+                        for day in regist_weekday:
+                            update(index, message.author, day, 0)
+                        msg = str(message.author) + 'が' + ','.join(regist_weekday) + 'に参加できなくなりました。'
 
-            elif regist_weekdays[1] == "new":
-                for column1 in df.columns.values:
-                    update(str(message.author), column1, 1)
-                for column2 in ['attend', 'absent', 'late']:
-                    update(str(message.author), column2, 0)
-
-        await client.send_message(message.channel, 'OK')
+        await client.send_message(message.channel, msg)
 
 
     elif message.content.startswith('output'):  #出席者確認
