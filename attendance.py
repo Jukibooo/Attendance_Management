@@ -110,7 +110,11 @@ async def on_message(message):
 
     elif message.content.startswith('output'):  #出席者確認
         global master
+<<<<<<< HEAD
         message_text = "[本日の出席者]\n"
+=======
+        message = ""
+>>>>>>> a65e5a9618bbc07560a6682bf5b6b0cd64bfb7ed
         if str(message.author) == master:
             aDate = datetime.date.today()
             weekday = aDate.weekday()   #曜日取得
@@ -130,6 +134,7 @@ async def on_message(message):
                 day = "Sun"
             print (csv_data)
 
+<<<<<<< HEAD
             for index in range(len(csv_data)):
                 if csv_data.loc[index, ['attend']]['attend'] == 1: #出席連絡がある場合
                     message_text = message_text + str(csv_data.loc[index, ["name"]]["name"]) + "\n"
@@ -145,11 +150,33 @@ async def on_message(message):
                             message_text = message_text + str(csv_data.loc[index, ["name"]]["name"]) + "\n"
                             #await client.send_message(message.channel, name)
                             #update(index, message.author, 'late', 0)
+=======
+            for name in csv_data.index.values:
+                if csv_data.at[name, 'attend'] == 1: #出席連絡がある場合
+                    message = str(name) + "\n"
+                    #await client.send_message(message.channel, name)
+                    update(message.author, 'attend', 0)
+                elif csv_data.at[name, 'absent'] == 0: #欠席連絡がない場合
+                    if  csv_data.at[name, 'late'] != 0:  #遅刻連絡があった場合
+                        message = str(name) + ' (' + str(csv_data.at[name, 'late']) + ')\n'
+                        #await client.send_message(message.channel, str(name) + ' (' + str(csv_data.at[name, 'late']) + ')')
+                        update(message.author, 'late', 0)
+                    else:   #遅刻連絡がない場合
+                        if csv_data.at[name, day] == 1:
+                            message = str(name) + "\n"
+                            await client.send_message(message.channel, name)
+                            update(message.author, 'late', 0)
+>>>>>>> a65e5a9618bbc07560a6682bf5b6b0cd64bfb7ed
                 else:   #欠席連絡がある場合
                     update(index, message.author, 'absent', 0)
                 for column in ['attend', 'absent', 'late']:
+<<<<<<< HEAD
                     update(index, message.author, column, 0)
             await client.send_message(message.channel, message_text)
+=======
+                        update(name, column, 0)
+                await client.send_message(message.channel, message)
+>>>>>>> a65e5a9618bbc07560a6682bf5b6b0cd64bfb7ed
         else:
             await client.send_message(message.channel, 'あなたにはその権限はありません。')
 
